@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Курсова робота</title>
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+<header>
+    <div class = "top">
+        <h2>Raised cosine distribution
+            <button id ="TeorButton" class="border-button">Теоретичні дані</button></h2>
+    </div>
+
+</header>
+<body>
+<div id="mypopup" class ="popup">
+    <div class="popup-content">
+        <div class="popup-header">
+            <h2>Теоретичні дані</h2>
+            <span class = "close">&times;</span>
+        </div>
+        <div class="popup-body">
+            <p> У теорії ймовірностей і статистиці підвищений косинусний розподіл — це
+                безперервний розподіл ймовірностей, що підтримується на інтервалі
+                [mu - s,mu + s]. Функція щільності ймовірності (PDF) є</p>
+            <div class="formula"><p>(1/(2s)) * [1+cos(((x - mu)/s)*&pi;)]</p></div>
+            <p>Функція розподілу (CDF) є</p>
+            <div class="formula"><p>(1/2) * [1 + ((x - mu)/s) + (1/&pi;)*sin(((x - mu)/s)*&pi;)]</p></div>
+            <p>Медіана є <div class="formula">mu</div></p>
+            <p>Дисперсія є <div class="formula">s^2(1/3 - 2/&pi;^2)</div></p>
+            <p>Мода є <div class="formula">mu</div></p>
+            <p> Для генерування випадкової величіни різними методами заданим розподілом, потрібно заповнити текстові
+                поля параметрів mu,s та заповнити поле з кількітю вибірка, після чого натиснути на кнопку "Розрахунок".</p>
+            <p> Кнопка "Зберегти результат" - зберігає отримані значення випадкових величин у файл.</p>
+            <p> Кнопка "Зворотня функція" - показує моделювання випадкової величини заданого розподілу
+                методом зворотньої функції та інтегральні характеристики.</p>
+            <p> Кнопка "Метод Неймана" - показує моделювання випадкової величини заданого розподілу методом
+                Неймана та інтегральні характеристики.</p>
+            <p> Кнопка "Алгоритм Метрополісу" - показує моделювання випадкової величини заданого розподілу алгоритмом
+                Метрополісу та інтегральні характеристики.</p>
+        </div>
+    </div>
+</div>
+<script>
+    let popup = document.getElementById('mypopup'),
+        popupToggle = document.getElementById('TeorButton'),
+        popupClose = document.querySelector('.close')
+
+    popupToggle.onclick = function (){
+        popup.style.display = "block";
+    }
+    popupClose.onclick = function (){
+        popup.style.display = "none";
+    }
+
+    window.onclick = function (e){
+        if (e.target === popup){
+            popup.style.display = "none"
+        }
+    }
+</script>
+<div>
+  <%=form_for :pages, url: {:action =>"result" } do |f| %>
+    <label class = "input_param_label">Введіть наступні данні: </label>
+    <label class = "parametr">mu</label>
+    <%= f.text_field :param_mu, :value => $params_mu %>
+    <label class = "parametr">s</label>
+    <%=f.text_field :param_s, :value => $params_s %>
+    <label class = "parametr">Nst</label>
+    <%=f.text_field :nst, :value => $nst %>
+    <%= f.button "Розрахунок",:id => "result_bat" ,:class => "result-button"%>
+  <% end %>
+</div>
+<hr>
+<div class="page-wrapper">
+  <div class="left-panel-wrapper">
+    <div class="left-panel">
+     <table id ="table_for_histo" class="table_for_histo">
+     </table>
+     </div>
+  </div>
+  <script>
+
+  </script>
+  <div class="content-wrapper">
+    <div class="content">
+        <script src='https://cdn.plot.ly/plotly-2.16.1.min.js'></script>
+      <div id='myDiv' class ="histogramm"><!-- Plotly chart will be drawn inside this DIV --></div>
+     </div>
+  </div>
+  <div class="right-panel-wrapper">
+    <div class="right-panel">
+      <div>
+        <%=form_for :pages, url: {:action =>"save_result" } do |f| %>
+          <%=f.submit "Зберегти результати", :class => "help_button" %>
+        <%end %>
+        <h2></h2>
+      </div>
+      </div>
+      <div>
+        <button class = "help_button" id = "inverse_but"> Зворотня функція</button>
+        <h2></h2>
+      </div>
+      <div>
+        <button class = "help_button" id = "neumann_but"> Метод Неймана</button>
+        <h2></h2>
+      </div>
+      <div>
+        <button class = "help_button" id = "metropolys_but"> Алгоритм Метрополиса</button>
+        <h2></h2>
+      </div>
+      <script>
+          function GoTableToHisto(t_array){
+              let f_array = <%=raw $arr_1 %>;
+              let s_array = <%=raw $arr_2 %>;
+              var table = document.getElementById('table_for_histo')
+              table.innerHTML = ''
+              var row1 =  `<tr>
+              <th>Крок</th>
+              <th>Розподіл</th>
+              <th>Метод</th>
+                </tr>`
+              table.innerHTML += row1
+              for (var i = 0; i < f_array.length; i++){
+                  var row = `<tr>
+							<td>${f_array[i]}</td>
+			        <td>${s_array[i]}</td>
+              <td>${t_array[i]}</td>
+					  </tr>`
+                  table.innerHTML += row
+              }
+          }
+          const butt_inverse = document.getElementById("inverse_but");
+          var inv_array = <%=raw $arr_3 %>;
+          butt_inverse.addEventListener('click',function() {GoTableToHisto(inv_array)})
+          const butt_neumann = document.getElementById("neumann_but");
+          var neum_array = <%=raw $arr_4 %>;
+          butt_neumann.addEventListener('click',function() {GoTableToHisto(neum_array)})
+          const butt_metro = document.getElementById("metropolys_but");
+          var metro_array = <%=raw $arr_5 %>;
+          butt_metro.addEventListener('click',function() {GoTableToHisto(metro_array)})
+      </script>
+      <script type="text/javascript">
+        function plotGraph(name, test){
+            trace1 = {
+                type: 'scatter',
+                x: <%=raw $arr_1 %>,
+                y: <%=raw $arr_2 %>,
+                mode: 'lines',
+                name: 'Розподіл',
+                line: {
+                    color: 'rgb(219, 64, 82)',
+                    width: 3
+                }
+            };
+            trace2 = {
+                type: 'scatter',
+                x: <%=raw $arr_1 %>,
+                y: test,
+                mode: 'lines',
+                name: 'Метод',
+                line: {
+                    color: 'rgb(55, 128, 191)',
+                    width: 2
+                }
+            };
+            var layout = {
+                title: name,
+                width: 1100,
+                height: 650
+            };
+            var data = [trace1, trace2];
+            Plotly.newPlot('myDiv', data, layout);
+
+        }
+        const inverseButtonHisto = document.getElementById("inverse_but");
+        var inv_array = <%=raw $arr_3 %>;
+        var name_inv = "Зворотня функція"
+        inverseButtonHisto.addEventListener('click',function() {plotGraph(name_inv, inv_array)})
+        const neumannButtonHisto = document.getElementById("neumann_but");
+        var neum_array = <%=raw $arr_4 %>;
+        var name_nm = "Метод Неймана"
+        neumannButtonHisto.addEventListener('click',function() {plotGraph(name_nm, neum_array)})
+        const metroButtonHisto = document.getElementById("metropolys_but");
+        var metro_array = <%=raw $arr_5 %>;
+        var name_ma = "Алгоритм Метрополісу"
+        metroButtonHisto.addEventListener('click',function() {plotGraph(name_ma, metro_array)})
+      </script>
+      <div>
+        <label class = "integral_char">Інтегральні характеристики</label>
+      </div>
+      <table id ="test_table" class = "integral_table">
+
+      </table>
+    <script>
+        function goIntegralTable(average,dispersion,mod){
+            var table = document.getElementById('test_table')
+            table.innerHTML = ''
+            var row1 =  `<tr>
+              <th></th>
+              <th>Очікування</th>
+              <th>Моделювання</th>
+                </tr>`
+            table.innerHTML += row1
+            var row2 =  `<tr>
+               <th>Аv</th>
+              <td><%=@integral_average%></td>
+              <td>${average}</td>
+                </tr>`
+            table.innerHTML += row2
+            var row3 =  `<tr>
+               <th>Dis</th>
+              <td><%=@integral_dispersion%></td>
+              <td>${dispersion}</td>
+                </tr>`
+            table.innerHTML += row3
+            var row4 =  `<tr>
+               <th>Mod</th>
+              <td><%=@integral_mod%></td>
+              <td>${mod}</td>
+                </tr>`
+            table.innerHTML += row4
+            var row5 =  `<tr>
+               <th>Sigma</th>
+              <td><%=@integral_sigma%></td>
+              <td>${Math.sqrt(dispersion).toFixed(4)}</td>
+                </tr>`
+            table.innerHTML += row5
+        }
+
+        const inverseButtonIntegral = document.getElementById("inverse_but");
+        var inverse_average= <%=$average_iv %>;
+        var inverse_dis = <%=$dis_iv %>;
+        var inverse_mod = <%=$mod_iv %>;
+        inverseButtonIntegral.addEventListener('click',function() {goIntegralTable(inverse_average,inverse_dis,inverse_mod)})
+        const neumannButtonIntegral = document.getElementById("neumann_but");
+        var nm_average= <%=$average_nm %>;
+        var nm_dis = <%=$dis_nm %>;
+        var nm_mod = <%=$mod_nm %>;
+        neumannButtonIntegral.addEventListener('click',function() {goIntegralTable(nm_average,nm_dis,nm_mod)})
+        const metroButtonIntegral = document.getElementById("metropolys_but");
+        var ma_average= <%=$average_ma %>;
+        var ma_dis = <%=$dis_ma %>;
+        var ma_mod = <%=$mod_ma %>;
+        metroButtonIntegral.addEventListener('click',function() {goIntegralTable(ma_average,ma_dis,ma_mod)})
+    </script>
+    </div>
+  </div>
+</div>
+</body>
+<div class="footer">
+  &copy; Пачков Микита ЗКС41
+</div>
+</html>
